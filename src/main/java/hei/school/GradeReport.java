@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,6 +24,31 @@ public class GradeReport {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    public BigDecimal penalizedGrade(BigDecimal rawPoints, BigDecimal maxPoints, LocalDateTime submittedAt,
+            LocalDate deadline) {
+        if (maxPoints.signum() <= 0) {
+            throw new IllegalArgumentException("Le barème doit être positif");
+        }
+
+        LocalDateTime deadlineAt = deadline.atTime(23, 59, 59);
+        long lateDays = 0;
+        if (submittedAt.isAfter(deadlineAt)) {
+            Duration delay = Duration.between(deadlineAt, submittedAt);
+            lateDays = delay.toDays();
+            if (!delay.minusDays(lateDays).isZero()) {
+                lateDays++;
+            }
+        }
+
+        long penalizedDays = Math.min(lateDays, 5);
+        BigDecimal remainingRate = BigDecimal.ONE
+                .subtract(new BigDecimal("0.10").multiply(BigDecimal.valueOf(penalizedDays)));
+        BigDecimal grade = rawPoints.multiply(new BigDecimal("20"))
+                .multiply(remainingRate)
+                .divide(maxPoints, 1, RoundingMode.HALF_UP);
+        return grade.max(BigDecimal.ZERO);
+    }
 
     public Map<String, Object> build(long studentId) {
         List<Map<String, Object>> students = jdbcTemplate.queryForList("SELECT * FROM student WHERE id = ?", studentId);
@@ -56,14 +82,14 @@ public class GradeReport {
             } else {
                 LocalDateTime submittedAt = ((Timestamp) row.get("submitted_at")).toLocalDateTime();
                 line.put("submittedAt", submittedAt);
-                line.put("late", submittedAt.toLocalDate().isAfter(deadline));
+                line.put("late", submittedAt.isAfter(deadline.atTime(23, 59, 59)));
                 if (row.get("raw_points") == null) {
                     line.put("status", "EN ATTENTE DE CORRECTION");
                     line.put("grade", null);
                 } else {
                     BigDecimal raw = (BigDecimal) row.get("raw_points");
                     BigDecimal max = (BigDecimal) row.get("max_points");
-                    BigDecimal grade = raw.multiply(new BigDecimal("20")).divide(max, 1, RoundingMode.HALF_UP);
+                    BigDecimal grade = penalizedGrade(raw, max, submittedAt, deadline);
                     line.put("status", "CORRIGÉ");
                     line.put("grade", grade);
                     line.put("feedback", row.get("feedback"));
