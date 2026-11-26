@@ -1,0 +1,13 @@
+reference;etudiant;email;promotion;exercice;echeance;soumis_le;en_retard;note_sur_20
+STD24001;Alice;alice@etu.kilasy.test;L3-A;Tri à bulles;2026-11-10;2026-11-09 18:00:00.0;non;16,0
+STD24001;Alice;alice@etu.kilasy.test;L3-A;Pile et file;2026-11-14;2026-11-13 20:15:00.0;non;17,0
+STD24001;Alice;alice@etu.kilasy.test;L3-A;Requêtes SQL avec jointures;2026-11-17;2026-11-16 22:00:00.0;non;16,5
+STD24002;Bob;bob@etu.kilasy.test;L3-A;Tri à bulles;2026-11-10;2026-11-12 00:00:00.0;oui;12,8
+STD24002;Bob;bob@etu.kilasy.test;L3-A;Pile et file;2026-11-14;2026-11-15 08:40:00.0;oui;14,4
+STD24003;Clara;clara@etu.kilasy.test;L3-A;Tri à bulles;2026-11-10;2026-11-13 10:00:00.0;oui;11,2
+STD24003;Clara;clara@etu.kilasy.test;L3-A;Pile et file;2026-11-14;2026-11-14 11:00:00.0;non;14,0
+STD24004;David;david@etu.kilasy.test;L3-B;Tri à bulles;2026-11-10;2026-11-18 15:00:00.0;oui;8,0
+STD24004;David;david@etu.kilasy.test;L3-B;Requêtes SQL avec jointures;2026-11-17;2026-11-19 09:00:00.0;oui;12,0
+STD24005;Emma;emma@etu.kilasy.test;L3-B;Requêtes SQL avec jointures;2026-11-17;2026-11-17 18:30:00.0;non;13,8
+STD24006;Felix;felix@etu.kilasy.test;L3-B;Tri à bulles;2026-11-10;2026-11-10 23:30:00.0;non;
+STD24006;Felix;felix@etu.kilasy.test;L3-B;Requêtes SQL avec jointures;2026-11-17;2026-11-17 23:50:00.0;non;
