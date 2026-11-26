@@ -31,13 +31,14 @@ public class CsvExport {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(
                 "SELECT st.reference, st.full_name, st.email, st.cohort, e.title, e.deadline, s.submitted_at, s.raw_points, e.max_points "
                         + "FROM submission s JOIN student st ON st.id = s.student_id JOIN exercise e ON e.id = s.exercise_id "
-                        + "ORDER BY st.full_name, e.deadline");
+                        + "ORDER BY st.full_name, e.deadline NULLS LAST");
 
         StringBuilder csv = new StringBuilder();
         csv.append("reference;etudiant;email;promotion;exercice;echeance;soumis_le;en_retard;note_sur_20\n");
         for (Map<String, Object> row : rows) {
             String note = "";
-            LocalDate deadline = ((Date) row.get("deadline")).toLocalDate();
+            Date deadlineDate = (Date) row.get("deadline");
+            LocalDate deadline = deadlineDate == null ? null : deadlineDate.toLocalDate();
             LocalDateTime submittedAt = ((Timestamp) row.get("submitted_at")).toLocalDateTime();
             if (row.get("raw_points") != null) {
                 BigDecimal grade = gradeReport.penalizedGrade(
@@ -52,7 +53,8 @@ public class CsvExport {
                     .append(row.get("title")).append(';')
                     .append(row.get("deadline")).append(';')
                     .append(row.get("submitted_at")).append(';')
-                    .append(submittedAt.isAfter(deadline.atTime(23, 59, 59)) ? "oui" : "non").append(';')
+                    .append(deadline != null && submittedAt.isAfter(deadline.atTime(23, 59, 59)) ? "oui" : "non")
+                    .append(';')
                     .append(note).append('\n');
         }
 

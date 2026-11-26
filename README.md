@@ -35,6 +35,7 @@ The API responds on http://localhost:8080.
 | GET | `/exercises` | List exercises |
 | GET | `/exercises/{id}` | Exercise details |
 | POST | `/exercises` | Create an exercise (teacher) |
+| POST | `/exercises/{id}/start` | Start a timed exercise (student) |
 | POST | `/exercises/{id}/submissions` | Submit an exercise (student) |
 | GET | `/submissions/{id}` | Submission details |
 | PUT | `/submissions/{id}/grade` | Grade a submission (teacher) |
@@ -81,6 +82,7 @@ curl http://localhost:8080/exports/grades.csv
 
 - A submission contains code, a link to a GitHub repository, or both.
 - A student can only submit once per exercise.
+- Timed exercises start counting down when a student opens them; submissions after the duration are rejected.
 - A submission after the deadline day is late; date-only deadlines expire at 23:59:59.
 - Late grades lose 10% per started 24-hour period, up to 50%. The penalty is calculated from raw points when grades are displayed, so correction, transcripts, emails and CSV exports use the same grade, including for existing submissions.
 - Points are entered on the exercise's scale (10, 20, 40…) and converted to a grade out of 20.
