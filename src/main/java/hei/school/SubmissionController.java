@@ -157,6 +157,14 @@ public class SubmissionController {
         mailSender.send(message);
         System.out.println("Email de note envoyé à " + row.get("email"));
 
+        try {
+            sendSms((String) row.get("phone"),
+                    "Votre note pour « " + title + " » est disponible : "
+                            + grade.toPlainString().replace('.', ',') + "/20.");
+        } catch (Exception ex) {
+            System.err.println("[SMS] Échec de l'envoi : " + ex.getMessage());
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("id", id);
         result.put("rawPoints", points);
@@ -165,5 +173,12 @@ public class SubmissionController {
         result.put("late", late);
         result.put("feedback", feedback);
         return ResponseEntity.ok(result);
+    }
+
+    private void sendSms(String phone, String text) {
+        if (phone == null || phone.isBlank()) {
+            return;
+        }
+        System.out.println("[SMS] " + phone + " : " + text);
     }
 }
