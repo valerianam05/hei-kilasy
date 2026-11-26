@@ -1,6 +1,10 @@
 package hei.school;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -19,11 +23,13 @@ public class CsvExport {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private GradeReport gradeReport;
+
     @GetMapping("/exports/grades.csv")
     public ResponseEntity<String> export() {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                "SELECT st.reference, st.full_name, st.email, st.cohort, e.title, e.deadline, s.submitted_at, s.raw_points, e.max_points, "
-                        + "(s.submitted_at::date > e.deadline) AS late "
+                "SELECT st.reference, st.full_name, st.email, st.cohort, e.title, e.deadline, s.submitted_at, s.raw_points, e.max_points "
                         + "FROM submission s JOIN student st ON st.id = s.student_id JOIN exercise e ON e.id = s.exercise_id "
                         + "ORDER BY st.full_name, e.deadline");
 
@@ -31,11 +37,13 @@ public class CsvExport {
         csv.append("reference;etudiant;email;promotion;exercice;echeance;soumis_le;en_retard;note_sur_20\n");
         for (Map<String, Object> row : rows) {
             String note = "";
+            LocalDate deadline = ((Date) row.get("deadline")).toLocalDate();
+            LocalDateTime submittedAt = ((Timestamp) row.get("submitted_at")).toLocalDateTime();
             if (row.get("raw_points") != null) {
-                double n = ((BigDecimal) row.get("raw_points")).doubleValue()
-                        / ((BigDecimal) row.get("max_points")).doubleValue() * 20;
-                n = Math.floor(n * 10) / 10;
-                note = String.valueOf(n).replace('.', ',');
+                BigDecimal grade = gradeReport.penalizedGrade(
+                        (BigDecimal) row.get("raw_points"), (BigDecimal) row.get("max_points"),
+                        submittedAt, deadline);
+                note = grade.toPlainString().replace('.', ',');
             }
             csv.append(row.get("reference")).append(';')
                     .append(row.get("full_name")).append(';')
@@ -44,7 +52,7 @@ public class CsvExport {
                     .append(row.get("title")).append(';')
                     .append(row.get("deadline")).append(';')
                     .append(row.get("submitted_at")).append(';')
-                    .append(Boolean.TRUE.equals(row.get("late")) ? "oui" : "non").append(';')
+                    .append(submittedAt.isAfter(deadline.atTime(23, 59, 59)) ? "oui" : "non").append(';')
                     .append(note).append('\n');
         }
 
